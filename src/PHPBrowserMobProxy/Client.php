@@ -27,14 +27,20 @@ class PHPBrowserMobProxy_Client
     /**
      * Open connection to the proxy
      *
+     * @port (int) The desired port.
      * @return void
      */
-    public function open()
+    public function open($port = NULL)
     {
+        $data = array();
+        if ($port) {
+            // @todo Add post checking.
+            $data['port'] = $port;
+        }
         $parts = parse_url($this->browsermob_url);
         $this->hostname = $parts["host"];
 
-        $response = Requests::post("http://" . $this->browsermob_url . "/proxy/");
+        $response = Requests::post("http://" . $this->browsermob_url . "/proxy/", array(), $data);
 
         $decoded = json_decode($response->body, true);
         if ($decoded) {
