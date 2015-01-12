@@ -99,19 +99,38 @@ class PHPBrowserMobProxy_Client
     {
         switch($property) {
             case "rawHar":
-                $proxy_handle = curl_init();
-                $har_url = "http://{$this->browsermob_url}/proxy/{$this->port}/har";
-                curl_setopt($proxy_handle, CURLOPT_URL, $har_url);
-                curl_setopt($proxy_handle, CURLOPT_RETURNTRANSFER, true);
-                $result = curl_exec($proxy_handle);
-                curl_close($proxy_handle);
-                return $result;
+                return $this->getRawHar();
 
             case "har":
-                return json_decode($this->rawHar, true);
+                return $this->getHar();
+
             default:
                 return $this->$property;
         }
+    }
+
+    /**
+     * Returns the HAR file contents.
+     *
+     * @return string|false
+     */
+    public function getRawHar() {
+        $proxy_handle = curl_init();
+        $har_url = "http://{$this->browsermob_url}/proxy/{$this->port}/har";
+        curl_setopt($proxy_handle, CURLOPT_URL, $har_url);
+        curl_setopt($proxy_handle, CURLOPT_RETURNTRANSFER, true);
+        $result = curl_exec($proxy_handle);
+        curl_close($proxy_handle);
+        return $result;
+    }
+
+    /**
+     * Returns the HAR file content as an array.
+     *
+     * @return array|false
+     */
+    public function getHar() {
+        return json_decode($this->getRawHar(), true);
     }
 
     /**
