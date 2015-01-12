@@ -28,13 +28,15 @@ class PHPBrowserMobProxy_Client
      * Open connection to the proxy
      *
      * @port (int) The desired port.
+     *
+     * @throws Exception
+     *
      * @return void
      */
     public function open($port = NULL)
     {
         $data = array();
         if ($port) {
-            // @todo Add post checking.
             $data['port'] = $port;
         }
         $parts = parse_url($this->browsermob_url);
@@ -42,9 +44,17 @@ class PHPBrowserMobProxy_Client
 
         $response = Requests::post("http://" . $this->browsermob_url . "/proxy/", array(), $data);
 
+        if ($response->status_code < 200 || $response->status_code >= 300) {
+            throw new Exception("Failed open new proxy, BMP response code is: " . $response->status_code);
+        }
+
         $decoded = json_decode($response->body, true);
-        if ($decoded) {
+        if (is_array($decoded) && isset($decoded["port"])) {
             $this->port = $decoded["port"];
+        }
+        else
+        {
+            throw new Exception("Failed open new proxy, no port number found in the BMP response.");
         }
         $this->url = $this->hostname . ":" . $this->port;
     }
